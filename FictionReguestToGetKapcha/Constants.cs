@@ -26,5 +26,7 @@ namespace FictionReguestToGetKapcha
         //Other Info
         public static Encoding encodeUTF8 = System.Text.Encoding.GetEncoding("UTF-8");
         public static string pathToBrowser = @"c:\Users\iJSmile\AppData\Local\Google\Chrome\Application\chrome.exe";
+
+        public static string GITHUBTEST = "testgithub";
     }
 }
