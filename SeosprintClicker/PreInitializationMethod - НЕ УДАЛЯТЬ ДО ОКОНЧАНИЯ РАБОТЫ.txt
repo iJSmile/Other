@@ -1,0 +1,59 @@
+﻿private void PreEnterInitialization()
+        {
+            //---------------------Request 1 Start---------------------
+            try
+            {
+                HttpWebRequest request1 = helper.CreateRequestAndSetSomeStandartHeaders(Constants.UrlSeosprint,
+                   new string[] { }, string.Empty, false);
+                var response = (HttpWebResponse)request1.GetResponse();
+
+                HtmlAgilityPack.HtmlDocument htmlDoc = helper.GetHtmlDocument(response);
+                string btnLoginRegExp = "(?<=class=\"btnlogin\" href=\")(.*)(?=\")";
+                var BtnIdQ1 = helper.GetStringByRegExp(htmlDoc, btnLoginRegExp);
+                var allCookies = response.Headers[HttpResponseHeader.SetCookie].Split(';').ToList();
+
+                Console.WriteLine("------------------------Query1Data---------------------------");
+                string UrlQ1 = string.Concat(Constants.UrlSeosprint, BtnIdQ1);
+                CookieContainer mainCookieContainer = new CookieContainer();
+                var uri = new Uri(Constants.UrlSeosprint);
+                phpsessCookie = allCookies[0].Trim();
+                langCookie = "lang=RU";
+                mainCookieContainer.SetCookies(uri, phpsessCookie);
+                mainCookieContainer.SetCookies(uri, langCookie);
+                string CookieQ1 = string.Concat(allCookies[0].Trim() + " " + allCookies[1].Trim());
+                string RefererQ1 = string.Concat(Constants.UrlSeosprint, "/");
+                Status.Text = "1-ый запрос: успешно.";
+
+                //---------------------Request 2 Start---------------------
+                HttpWebRequest request2 = (HttpWebRequest)WebRequest.Create(UrlQ1);
+                //request2.Method = Constants.MethodGet;
+                // request2.Accept = Constants.AcceptGet;
+                //request2.Host = Constants.DefaultHost;
+                //request2.UserAgent = Constants.UserAgent;
+                request2.Referer = RefererQ1;
+                request2.CookieContainer = mainCookieContainer;
+
+                var response2 = (HttpWebResponse)request2.GetResponse();
+                HtmlAgilityPack.HtmlDocument htmlDoc2 = helper.GetHtmlDocument(response2);
+                var allCookies2 = response2.Headers[HttpResponseHeader.SetCookie].Split(';').ToList();
+                response2.Close();
+
+                var asklcntRegExp = "(?<=name=\"asklcnt\" value=\")(.*)(?=\")";
+                log_cnt = helper.GetStringByRegExp(htmlDoc2, asklcntRegExp);
+                string LoginUrl = string.Concat(Constants.UrlSeosprint, "/proc-service/us-login.php");
+                EnterRefererQ2 = UrlQ1;
+                helloCookie = "hello=1";
+                mainCookieContainer.SetCookies(uri, helloCookie);
+
+                Status.Text = "2-ый запрос: успешно.";
+                helper.LoadCapcha(EnterRefererQ2, mainCookieContainer);
+                Status.Text = response2.Cookies[0].Name + response2.Cookies[0].Value;
+
+                var image = Image.FromFile("captcha.png");
+                Captcha.Height = image.Height;
+                Captcha.Width = image.Width;
+                Captcha.Image = image;
+
+            }
+            catch (Exception e) { MessageBox.Show(e.Message); }
+        }
